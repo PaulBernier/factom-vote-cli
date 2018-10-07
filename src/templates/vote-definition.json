@@ -1,0 +1,39 @@
+{
+    "proposal": {
+        "title": "Vegetable Award",
+        "text": "Please vote for your favorite vegetable",
+        "externalRef": {
+            "href": "https://the-vegetables/vote",
+            "hash": {
+                "value": "b950beb02d45cc9c96c198243af669b3dc57d31de994d655f506372fdec3a885",
+                "algo": "sha256"
+            }
+        }
+    },
+    "vote": {
+        "phasesBlockHeights": {
+            "commitStart": 1000,
+            "commitEnd": 2000,
+            "revealStart": 2001,
+            "revealEnd": 3000
+        },
+        "type": 0,
+        "config": {
+            "options": [
+                "broccoli",
+                "spinach",
+                "avocado"
+            ],
+            "minOptions": 1,
+            "maxOptions": 2,
+            "acceptanceCriteria": {
+                "minTurnout": {
+                    "weighted": 0.3,
+                    "unweighted": 0.5
+                }
+            },
+            "allowAbstention": true,
+            "computeResultsAgainst": "ALL_ELIGIBLE_VOTERS"
+        }
+    }
+}

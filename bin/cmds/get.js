@@ -29,7 +29,7 @@ exports.handler = function (argv) {
 
     console.log(`Retrieving vote information from [${argv.chainid}]...`);
     manager.getVote(argv.chainid)
-        .then(console.log)
+        .then(r => console.log(JSON.stringify(r, null, 4)))
         .catch(printError);
 
 };
