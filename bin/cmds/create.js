@@ -4,7 +4,7 @@ const fs = require('fs'),
     { FactomVoteManager } = require('factom-vote'),
     { getConnectionInformation, printError } = require('../../src/util');
 
-exports.command = 'create <votejson> [votersjson]';
+exports.command = 'create <votedefjson> [votersjson]';
 exports.describe = 'Create a vote.';
 
 exports.builder = function (yargs) {
@@ -34,8 +34,8 @@ exports.builder = function (yargs) {
         required: true,
         type: 'string',
         describe: 'Format: identity_chain:identity_key',
-    }).positional('votejson', {
-        describe: 'Path to a JSON file containing vote definition.'
+    }).positional('votedefjson', {
+        describe: 'Path to a JSON file containing a vote definition.'
     }).positional('votersjson', {
         describe: 'Path to a JSON file containing eligible voters.'
     });
@@ -49,10 +49,10 @@ exports.handler = function (argv) {
     const [chainId, key] = argv.identity.split(':');
     const identity = { chainId, key };
 
-    const definition = JSON.parse(fs.readFileSync(argv.votejson));
+    const definition = JSON.parse(fs.readFileSync(argv.votedefjson));
     const eligibleVoters = argv.votersjson ? JSON.parse(fs.readFileSync(argv.votersjson)) : [];
 
-    console.log('Creating vote...');
+    console.error('Creating vote...');
     const voteData = { definition, registrationChainId: argv.register, eligibleVoters, identity };
 
     manager.createVote(voteData, argv.ecaddress)

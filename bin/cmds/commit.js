@@ -5,7 +5,7 @@ const fs = require('fs'),
     { FactomVoteManager } = require('factom-vote'),
     { getConnectionInformation, printError } = require('../../src/util');
 
-exports.command = 'commit <votechainid> <votejson>';
+exports.command = 'commit <votejson>';
 exports.describe = 'Commit a vote.';
 
 exports.builder = function (yargs) {
@@ -29,8 +29,11 @@ exports.builder = function (yargs) {
         required: true,
         type: 'string',
         describe: 'Format: identity_chain:identity_key',
-    }).positional('votechainid', {
-        describe: 'Chain id of the vote to commit to.'
+    }).option('chain', {
+        alias: 'c',
+        required: true,
+        type: 'string',
+        describe: 'Chain ID of the vote to commit to.',
     }).positional('votejson', {
         describe: 'Path to a JSON file containing vote options selected.'
     });
@@ -43,10 +46,10 @@ exports.handler = async function (argv) {
 
     const [chainId, key] = argv.identity.split(':');
     const identity = { chainId, key };
-    const voteChainId = argv.votechainid;
+    const voteChainId = argv.chain;
     const revealJson = generateRevealJson(voteChainId, identity, JSON.parse(fs.readFileSync(argv.votejson)));
 
-    console.log('Commiting vote...');
+    console.error('Committing vote...');
     manager.commitVote(voteChainId, revealJson.reveal, identity, argv.ecaddress)
         .then(res => onCommitSuccess(res, revealJson))
         .catch(printError);
@@ -57,7 +60,7 @@ function onCommitSuccess(result, revealJson) {
 
     fs.writeFileSync(revealFilename, JSON.stringify(revealJson, null, 4));
     console.log(result);
-    console.log(`Reveal file saved at \`${revealFilename}\`. Use that file to later reveal your vote.`);
+    console.error(`Reveal file saved at \`${revealFilename}\`. Use that file to later reveal your vote.`);
 }
 
 function generateRevealJson(voteChainId, identity, options) {

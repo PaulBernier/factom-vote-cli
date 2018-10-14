@@ -27,7 +27,7 @@ exports.handler = function (argv) {
     const walletd = getConnectionInformation(argv.wallet, 8089);
     const manager = new FactomVoteManager({ factomd, walletd });
 
-    console.log(`Retrieving vote information from [${argv.chainid}]...`);
+    console.error(`Retrieving vote information from [${argv.chainid}]...`);
     manager.getVote(argv.chainid)
         .then(r => console.log(JSON.stringify(r, null, 4)))
         .catch(printError);

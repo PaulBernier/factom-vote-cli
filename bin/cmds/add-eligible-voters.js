@@ -4,7 +4,7 @@ const fs = require('fs'),
     { FactomVoteManager } = require('factom-vote'),
     { getConnectionInformation, printError } = require('../../src/util');
 
-exports.command = 'add-voters <chainid> <votersjson>';
+exports.command = 'add-voters <votersjson>';
 exports.describe = 'Append eligible voters to an existing list.';
 
 exports.builder = function (yargs) {
@@ -28,8 +28,11 @@ exports.builder = function (yargs) {
         required: true,
         type: 'string',
         describe: 'Format: identity_chain:identity_key',
-    }).positional('chainid', {
-        describe: 'Chain id of the existing eligible voters list.'
+    }).option('chain', {
+        alias: 'c',
+        required: true,
+        type: 'string',
+        describe: 'Chain ID of a list of eligible voters.',
     }).positional('votersjson', {
         describe: 'Path to a JSON file containing the list eligible voters.'
     });
@@ -43,8 +46,8 @@ exports.handler = function (argv) {
     const identityKey = argv.identity.split(':')[1];
     const eligibleVoters = JSON.parse(fs.readFileSync(argv.votersjson));
 
-    console.log(`Adding eligible voters to ${argv.chainid}...`);
-    const appendEligibleVotersData = { eligibleVoters, eligibleVotersChainId: argv.chainid, identityKey };
+    console.error(`Adding eligible voters to ${argv.chain}...`);
+    const appendEligibleVotersData = { eligibleVoters, eligibleVotersChainId: argv.chain, identityKey };
     manager.appendEligibleVoters(appendEligibleVotersData, argv.ecaddress)
         .then(console.log)
         .catch(printError);

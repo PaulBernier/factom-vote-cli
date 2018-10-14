@@ -35,7 +35,7 @@ exports.handler = function (argv) {
 
     const revealData = JSON.parse(fs.readFileSync(argv.revealjson));
 
-    console.log('Revealing vote...');
+    console.error('Revealing vote...');
     manager.revealVote(revealData.voteChainId, revealData.reveal, revealData.identityChainId, argv.ecaddress)
         .then(console.log)
         .catch(printError);

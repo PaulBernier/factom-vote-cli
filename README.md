@@ -32,14 +32,14 @@ $ factom-vote-cli create --id 3a6c770d8b152dcc80fa0a54fa931c6208e96f14f76dd616e5
 ## Append eligible voters
 
 ```bash
-# factom-vote-cli add-voters --id <id_chain:id_key> --ec <ec_address> <voters_chain_id> <voters_json>
+# factom-vote-cli add-voters --id <id_chain:id_key> --ec <ec_address> -c <voters_chain_id> <voters_json>
 $ factom-vote-cli add-voters --id 3a6c770d8b152dcc80fa0a54fa931c6208e96f14f76dd616e51502a58836e9f8:idpub3Doj5fqXye8PkX8w83hzPh3PXbiLhrxTZjT6sXmtFQdDyzwymz --ec EC2vXWYkAPduo3oo2tPuzA44Tm7W6Cj7SeBr3fBnzswbG5rrkSTD c973b2db5a4959c64606f7df7903918737f226a0ffaf93911f192582878b29eb voters.json
 ```
 
 ## Commit vote
 
 ```bash
-# factom-vote-cli commit --id <id_chain:id_key> --ec <ec_address> <vote_chain_id> <options_json>
+# factom-vote-cli commit --id <id_chain:id_key> --ec <ec_address> -c <vote_chain_id> <options_json>
 $ factom-vote-cli commit --id 3a6c770d8b152dcc80fa0a54fa931c6208e96f14f76dd616e51502a58836e9f8:idpub3Doj5fqXye8PkX8w83hzPh3PXbiLhrxTZjT6sXmtFQdDyzwymz --ec EC2vXWYkAPduo3oo2tPuzA44Tm7W6Cj7SeBr3fBnzswbG5rrkSTD c973b2db5a4959c64606f7df7903918737f226a0ffaf93911f192582878b29eb options.json
 ```
 
