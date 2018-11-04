@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-const fs = require('fs'),
+const ora = require('ora'),
+    chalk = require('chalk'),
+    fs = require('fs'),
     { FactomVoteManager } = require('factom-vote'),
-    { getConnectionInformation, printError } = require('../../src/util');
+    { getConnectionInformation } = require('../../src/util');
 
 exports.command = 'reveal <revealjson>';
 exports.describe = 'Reveal a vote.';
@@ -28,15 +30,29 @@ exports.builder = function (yargs) {
     });
 };
 
-exports.handler = function (argv) {
+exports.handler = async function (argv) {
     const factomd = getConnectionInformation(argv.socket, 8088);
     const walletd = getConnectionInformation(argv.wallet, 8089);
     const manager = new FactomVoteManager({ factomd, walletd });
 
-    const revealData = JSON.parse(fs.readFileSync(argv.revealjson));
+    let spinner = ora('Checking connections...').start();
+    try {
+        await manager.verifyConnections();
+        spinner.succeed('Connections ok');
+    } catch (e) {
+        spinner.fail(e);
+        return;
+    }
 
-    console.error('Revealing vote...');
-    manager.revealVote(revealData.voteChainId, revealData.reveal, revealData.identityChainId, argv.ecaddress)
-        .then(console.log)
-        .catch(printError);
+    spinner = ora('Revealing vote...').start();
+    try {
+        const revealData = JSON.parse(fs.readFileSync(argv.revealjson));
+        const result = await manager.revealVote(revealData.voteChainId, revealData.reveal, revealData.identityChainId, argv.ecaddress);
+        spinner.succeed(chalk.green('Vote revealed'));
+        console.log(result);
+    } catch (e) {
+        const message = e instanceof Error ? e.message : e;
+        spinner.fail(chalk.red(message));
+        return;
+    }
 };

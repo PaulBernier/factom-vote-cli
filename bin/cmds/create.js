@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-const fs = require('fs'),
+const ora = require('ora'),
+    chalk = require('chalk'),
+    fs = require('fs'),
     { FactomVoteManager } = require('factom-vote'),
-    { getConnectionInformation, printError } = require('../../src/util');
+    { getConnectionInformation } = require('../../src/util');
 
 exports.command = 'create <votedefjson> [votersjson]';
 exports.describe = 'Create a vote.';
@@ -41,10 +43,19 @@ exports.builder = function (yargs) {
     });
 };
 
-exports.handler = function (argv) {
+exports.handler = async function (argv) {
     const factomd = getConnectionInformation(argv.socket, 8088);
     const walletd = getConnectionInformation(argv.wallet, 8089);
     const manager = new FactomVoteManager({ factomd, walletd });
+
+    let spinner = ora('Checking connections...').start();
+    try {
+        await manager.verifyConnections();
+        spinner.succeed('Connections ok');
+    } catch (e) {
+        spinner.fail(e);
+        return;
+    }
 
     const [chainId, key] = argv.identity.split(':');
     const identity = { chainId, key };
@@ -52,11 +63,16 @@ exports.handler = function (argv) {
     const definition = JSON.parse(fs.readFileSync(argv.votedefjson));
     const eligibleVoters = argv.votersjson ? JSON.parse(fs.readFileSync(argv.votersjson)) : [];
 
-    console.error('Creating vote...');
     const voteData = { definition, registrationChainId: argv.register, eligibleVoters, identity };
+    spinner = ora('Creating vote...').start();
 
-    manager.createVote(voteData, argv.ecaddress)
-        .then(console.log)
-        .catch(printError);
-
+    try {
+        const result = await manager.createVote(voteData, argv.ecaddress);
+        spinner.succeed(chalk.green('Vote created'));
+        console.log(result);
+    } catch (e) {
+        const message = e instanceof Error ? e.message : e;
+        spinner.fail(chalk.red(message));
+        return;
+    }
 };

@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-const fs = require('fs'),
+const ora = require('ora'),
+    chalk = require('chalk'),
+    fs = require('fs'),
     { FactomVoteManager } = require('factom-vote'),
-    { getConnectionInformation, printError } = require('../../src/util');
+    { getConnectionInformation } = require('../../src/util');
 
 exports.command = 'add-voters <votersjson>';
 exports.describe = 'Append eligible voters to an existing list.';
@@ -38,18 +40,34 @@ exports.builder = function (yargs) {
     });
 };
 
-exports.handler = function (argv) {
+exports.handler = async function (argv) {
     const factomd = getConnectionInformation(argv.socket, 8088);
     const walletd = getConnectionInformation(argv.wallet, 8089);
     const manager = new FactomVoteManager({ factomd, walletd });
 
+    let spinner = ora('Checking connections...').start();
+    try {
+        await manager.verifyConnections();
+        spinner.succeed('Connections ok');
+    } catch (e) {
+        spinner.fail(e);
+        return;
+    }
+
     const identityKey = argv.identity.split(':')[1];
     const eligibleVoters = JSON.parse(fs.readFileSync(argv.votersjson));
 
-    console.error(`Adding eligible voters to ${argv.chain}...`);
-    const appendEligibleVotersData = { eligibleVoters, eligibleVotersChainId: argv.chain, identityKey };
-    manager.appendEligibleVoters(appendEligibleVotersData, argv.ecaddress)
-        .then(console.log)
-        .catch(printError);
 
+    const appendEligibleVotersData = { eligibleVoters, eligibleVotersChainId: argv.chain, identityKey };
+    spinner = ora(`Adding eligible voters to ${chalk.yellow(argv.chain)}...`).start();
+
+    try {
+        const result = await manager.appendEligibleVoters(appendEligibleVotersData, argv.ecaddress);
+        spinner.succeed(chalk.green(`Added eligible voters to ${chalk.yellow(argv.chain)}`));
+        console.log(result);
+    } catch (e) {
+        const message = e instanceof Error ? e.message : e;
+        spinner.fail(chalk.red(message));
+        return;
+    }
 };

@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
-const fs = require('fs'),
+const ora = require('ora'),
+    chalk = require('chalk'),
+    fs = require('fs'),
     crypto = require('crypto'),
     { FactomVoteManager } = require('factom-vote'),
-    { getConnectionInformation, printError } = require('../../src/util');
+    { getConnectionInformation } = require('../../src/util');
 
 exports.command = 'commit <votejson>';
 exports.describe = 'Commit a vote.';
@@ -44,23 +46,38 @@ exports.handler = async function (argv) {
     const walletd = getConnectionInformation(argv.wallet, 8089);
     const manager = new FactomVoteManager({ factomd, walletd });
 
+    let spinner = ora('Checking connections...').start();
+    try {
+        await manager.verifyConnections();
+        spinner.succeed('Connections ok');
+    } catch (e) {
+        spinner.fail(e);
+        return;
+    }
+
     const [chainId, key] = argv.identity.split(':');
     const identity = { chainId, key };
     const voteChainId = argv.chain;
-    const revealJson = generateRevealJson(voteChainId, identity, JSON.parse(fs.readFileSync(argv.votejson)));
 
-    console.error('Committing vote...');
-    manager.commitVote(voteChainId, revealJson.reveal, identity, argv.ecaddress)
-        .then(res => onCommitSuccess(res, revealJson))
-        .catch(printError);
+    spinner = ora('Committing vote...').start();
+    try {
+        const revealJson = generateRevealJson(voteChainId, identity, JSON.parse(fs.readFileSync(argv.votejson)));
+        const result = await manager.commitVote(voteChainId, revealJson.reveal, identity, argv.ecaddress);
+        spinner.succeed(chalk.green('Vote committed'));
+        onCommitSuccess(result, revealJson);
+    } catch (e) {
+        const message = e instanceof Error ? e.message : e;
+        spinner.fail(chalk.red(message));
+        return;
+    }
 };
 
 function onCommitSuccess(result, revealJson) {
     const revealFilename = `${revealJson.identityChainId}@${revealJson.voteChainId}.reveal.json`;
 
     fs.writeFileSync(revealFilename, JSON.stringify(revealJson, null, 4));
+    console.error(`Reveal file saved at ${chalk.yellow(revealFilename)}. Use that file to later reveal your vote.`);
     console.log(result);
-    console.error(`Reveal file saved at \`${revealFilename}\`. Use that file to later reveal your vote.`);
 }
 
 function generateRevealJson(voteChainId, identity, options) {

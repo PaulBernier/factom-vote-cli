@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const colors = require('colors');
+const chalk = require('chalk');
 
 const eligibleVotersTemplate = require('../../src/templates/eligible-voters.json'),
     voteDefinitionTemplate = require('../../src/templates//vote-definition.json');
@@ -22,7 +22,7 @@ exports.handler = function (argv) {
             console.log(JSON.stringify(eligibleVotersTemplate, null, 4));
             break;
         default:
-            console.error(colors.red(`Invalid template type: ${argv.type}`));
+            console.error(chalk.red(`Invalid template type: ${argv.type}`));
     }
 
 };
