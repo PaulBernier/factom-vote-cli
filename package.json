@@ -1,6 +1,6 @@
 {
   "name": "factom-vote-cli",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "CLI to Factom on-chain voting protocol",
   "bin": {
     "factom-vote-cli": "./bin/factom-vote-cli.js"
@@ -25,7 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "chalk": "^2.4.1",
-    "factom-vote": "0.1.2",
+    "factom-vote": "0.2.0",
     "ora": "^3.0.0",
     "yargs": "^12.0.2"
   },
